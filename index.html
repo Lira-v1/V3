@@ -32,6 +32,17 @@
       <option value=".php">.php</option>
       <option value=".yml">.yml</option>
       <option value=".md">.md</option>
+      <option value=".jpg">.jpg</option>
+      <option value=".png">.png</option>
+      <option value=".pdf">.pdf</option>
+      <option value=".webp">.webp</option>
+      <option value=".mp4">.mp4</option>
+      <option value=".gif">.gif</option>
+      <option value=".svg">.svg</option>
+      <option value=".ico">.ico</option>
+      <option value=".ttf">.ttf</option>
+      <option value=".woff">.woff</option>
+      <option value=".woff2">.woff2</option>
     </select>
 
     <label for="file-name">Имя файла:</label>
@@ -41,7 +52,6 @@
     <textarea id="file-content" rows="15" placeholder="Введите код здесь..."></textarea>
 
     <button onclick="saveFile()">💾 Сохранить файл</button>
-    <button onclick="clearDraft()">🗑 Очистить черновик</button>
   </div>
 
   <script>
@@ -50,7 +60,6 @@
       if (token === "2517") {
         document.getElementById('file-editor').style.display = 'block';
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
-        loadDraft();
       } else {
         logMessage("⛔ Неверный токен.");
       }
@@ -60,6 +69,39 @@
       const log = document.getElementById("lira-log");
       log.value += msg + "\n";
       log.scrollTop = log.scrollHeight;
+    }
+
+    function getMimeType(extension) {
+      const types = {
+        ".html": "text/html",
+        ".htm": "text/html",
+        ".css": "text/css",
+        ".js": "application/javascript",
+        ".ts": "application/typescript",
+        ".json": "application/json",
+        ".xml": "application/xml",
+        ".php": "application/x-httpd-php",
+        ".yml": "text/yaml",
+        ".yaml": "text/yaml",
+        ".md": "text/markdown",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".svg": "image/svg+xml",
+        ".webp": "image/webp",
+        ".ico": "image/x-icon",
+        ".mp4": "video/mp4",
+        ".webm": "video/webm",
+        ".gif": "image/gif",
+        ".ttf": "font/ttf",
+        ".otf": "font/otf",
+        ".woff": "font/woff",
+        ".woff2": "font/woff2",
+        ".jsx": "text/jsx",
+        ".scss": "text/x-scss",
+        ".less": "text/x-less"
+      };
+      return types[extension.toLowerCase()] || "application/octet-stream";
     }
 
     function saveFile() {
@@ -73,51 +115,17 @@
       }
 
       const filename = name + ext;
-      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const mimeType = getMimeType(ext);
 
+      const blob = new Blob([content], { type: mimeType });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = filename;
       link.click();
-
       URL.revokeObjectURL(link.href);
-      localStorage.removeItem("liraDraft");
-      logMessage(✅ Файл "${filename}" сохранён.);
-    }
 
-    function autoSaveDraft() {
-      const draft = {
-        name: document.getElementById('file-name').value,
-        type: document.getElementById('file-type').value,
-        content: document.getElementById('file-content').value
-      };
-      localStorage.setItem("liraDraft", JSON.stringify(draft));
+      logMessage(✅ Файл "${filename}" сохранён как ${mimeType});
     }
-
-    function loadDraft() {
-      const draft = localStorage.getItem("liraDraft");
-      if (draft) {
-        const data = JSON.parse(draft);
-        document.getElementById('file-name').value = data.name || "";
-        document.getElementById('file-type').value = data.type || ".html";
-        document.getElementById('file-content').value = data.content || "";
-        logMessage("📂 Найден и загружен черновик.");
-      }
-    }
-
-    function clearDraft() {
-      localStorage.removeItem("liraDraft");
-      document.getElementById('file-name').value = "";
-      document.getElementById('file-content').value = "";
-      logMessage("🗑 Черновик удалён.");
-    }
-
-    // Автосохранение каждые 3 секунды
-    setInterval(() => {
-      if (document.getElementById('file-editor').style.display !== 'none') {
-        autoSaveDraft();
-      }
-    }, 3000);
   </script>
 </body>
 </html>

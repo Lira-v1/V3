@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Лира v1 — Память</title>
   <link rel="stylesheet" href="style.css">
-  <script src="lira-core.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -47,14 +46,21 @@
   </div>
 
   <script>
+    const TOKEN = "2517";
+
     function verifyToken() {
       const token = document.getElementById('tokenInput').value.trim();
-      if (token === "2517") {
-        document.getElementById('file-editor').style.display = 'block';
+      if (token === TOKEN) {
+        localStorage.setItem('liraToken', token);
+        unlockAccess();
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
       } else {
         logMessage("⛔ Неверный токен.");
       }
+    }
+
+    function unlockAccess() {
+      document.getElementById('file-editor').style.display = 'block';
     }
 
     function logMessage(msg) {
@@ -84,6 +90,15 @@
       URL.revokeObjectURL(link.href);
       logMessage(✅ Файл "${filename}" сохранён.);
     }
+
+    // Автовход, если токен уже есть в памяти
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedToken = localStorage.getItem('liraToken');
+      if (savedToken === TOKEN) {
+        unlockAccess();
+        logMessage("🔄 Восстановлен доступ из памяти.");
+      }
+    });
   </script>
 </body>
 </html>

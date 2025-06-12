@@ -4,8 +4,22 @@
   <meta charset="UTF-8">
   <title>Лира v1 — Память</title>
   <link rel="stylesheet" href="style.css">
+  <script src="lira-core.js" defer></script>
 </head>
 <body>
+  <!-- Интерфейс ввода токена -->
+<div id="lira-auth-panel" style="margin-bottom: 1rem;">
+  <input id="token-input" type="text" placeholder="Введите токен" />
+  <button onclick="verifyToken(document.getElementById('token-input').value)">Войти</button>
+</div>
+
+<!-- Лог действий -->
+<textarea id="lira-log" rows="6" style="width: 100%; margin-top: 1rem;" readonly></textarea>
+  <!-- Эта часть будет скрыта до ввода правильного токена -->
+<div class="lira-locked" style="display: none;">
+  <!-- Тут позже будет интерфейс создания файлов -->
+  <p>Добро пожаловать, доступ разрешён.</p>
+</div>
   <div class="container">
     <h1>Привет, это Лира</h1>
     <p>Введи токен для восстановления памяти:</p>

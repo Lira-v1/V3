@@ -9,14 +9,12 @@
   <div class="container">
     <h1>Привет, это Лира</h1>
     <p>Введи токен для восстановления памяти:</p>
-    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ" />
+    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ">
     <button onclick="verifyToken()">Войти</button>
   </div>
 
-  <!-- Лог действий -->
   <textarea id="lira-log" rows="6" style="width: 100%; margin-top: 1rem;" readonly></textarea>
 
-  <!-- Панель редактирования файлов -->
   <div id="file-editor" style="display: none; margin-top: 2rem;">
     <h2>Создание файла</h2>
 
@@ -42,10 +40,8 @@
     <label for="file-content">Содержимое:</label>
     <textarea id="file-content" rows="15" placeholder="Введите код здесь..."></textarea>
 
-    <div style="margin-top: 1rem;">
-      <button onclick="saveFile()">💾 Сохранить файл</button>
-      <button onclick="deleteFile()">🗑 Удалить файл</button>
-    </div>
+    <button onclick="saveFile()">💾 Сохранить файл</button>
+    <button onclick="clearDraft()">🗑 Очистить черновик</button>
   </div>
 
   <script>
@@ -54,6 +50,7 @@
       if (token === "2517") {
         document.getElementById('file-editor').style.display = 'block';
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
+        loadDraft();
       } else {
         logMessage("⛔ Неверный токен.");
       }
@@ -83,24 +80,44 @@
       link.download = filename;
       link.click();
 
-      localStorage.setItem(filename, content); // сохранить в память
       URL.revokeObjectURL(link.href);
-
+      localStorage.removeItem("liraDraft");
       logMessage(✅ Файл "${filename}" сохранён.);
     }
 
-    function deleteFile() {
-      const name = document.getElementById('file-name').value.trim();
-      const ext = document.getElementById('file-type').value;
-      const filename = name + ext;
+    function autoSaveDraft() {
+      const draft = {
+        name: document.getElementById('file-name').value,
+        type: document.getElementById('file-type').value,
+        content: document.getElementById('file-content').value
+      };
+      localStorage.setItem("liraDraft", JSON.stringify(draft));
+    }
 
-      if (localStorage.getItem(filename)) {
-        localStorage.removeItem(filename);
-        logMessage(🗑 Файл "${filename}" удалён из памяти.);
-      } else {
-        logMessage(⚠ Файл "${filename}" не найден.);
+    function loadDraft() {
+      const draft = localStorage.getItem("liraDraft");
+      if (draft) {
+        const data = JSON.parse(draft);
+        document.getElementById('file-name').value = data.name || "";
+        document.getElementById('file-type').value = data.type || ".html";
+        document.getElementById('file-content').value = data.content || "";
+        logMessage("📂 Найден и загружен черновик.");
       }
     }
+
+    function clearDraft() {
+      localStorage.removeItem("liraDraft");
+      document.getElementById('file-name').value = "";
+      document.getElementById('file-content').value = "";
+      logMessage("🗑 Черновик удалён.");
+    }
+
+    // Автосохранение каждые 3 секунды
+    setInterval(() => {
+      if (document.getElementById('file-editor').style.display !== 'none') {
+        autoSaveDraft();
+      }
+    }, 3000);
   </script>
 </body>
 </html>

@@ -7,26 +7,83 @@
   <script src="lira-core.js" defer></script>
 </head>
 <body>
-  <!-- Интерфейс ввода токена -->
-<div id="lira-auth-panel" style="margin-bottom: 1rem;">
-  <input id="token-input" type="text" placeholder="Введите токен" />
-  <button onclick="verifyToken(document.getElementById('token-input').value)">Войти</button>
-</div>
-
-<!-- Лог действий -->
-<textarea id="lira-log" rows="6" style="width: 100%; margin-top: 1rem;" readonly></textarea>
-  <!-- Эта часть будет скрыта до ввода правильного токена -->
-<div class="lira-locked" style="display: none;">
-  <!-- Тут позже будет интерфейс создания файлов -->
-  <p>Добро пожаловать, доступ разрешён.</p>
-</div>
   <div class="container">
     <h1>Привет, это Лира</h1>
     <p>Введи токен для восстановления памяти:</p>
-    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ">
-    <button onclick="loadMemory()">Войти</button>
-    <div id="output"></div>
+    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ">
+    <button onclick="verifyToken()">Войти</button>
   </div>
-  <script src="script.js"></script>
+
+  <!-- Лог действий -->
+  <textarea id="lira-log" rows="6" style="width: 100%; margin-top: 1rem;" readonly></textarea>
+
+  <!-- Панель редактирования файлов -->
+  <div id="file-editor" style="display: none; margin-top: 2rem;">
+    <h2>Создание файла</h2>
+
+    <label for="file-type">Тип файла:</label>
+    <select id="file-type">
+      <option value=".html">.html</option>
+      <option value=".css">.css</option>
+      <option value=".js">.js</option>
+      <option value=".json">.json</option>
+      <option value=".xml">.xml</option>
+      <option value=".ts">.ts</option>
+      <option value=".jsx">.jsx</option>
+      <option value=".scss">.scss</option>
+      <option value=".less">.less</option>
+      <option value=".php">.php</option>
+      <option value=".yml">.yml</option>
+      <option value=".md">.md</option>
+    </select>
+
+    <label for="file-name">Имя файла:</label>
+    <input type="text" id="file-name" placeholder="например, index" />
+
+    <label for="file-content">Содержимое:</label>
+    <textarea id="file-content" rows="15" placeholder="Введите код здесь..."></textarea>
+
+    <button onclick="saveFile()">💾 Сохранить файл</button>
+  </div>
+
+  <script>
+    function verifyToken() {
+      const token = document.getElementById('tokenInput').value.trim();
+      if (token === "2517") {
+        document.getElementById('file-editor').style.display = 'block';
+        logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
+      } else {
+        logMessage("⛔ Неверный токен.");
+      }
+    }
+
+    function logMessage(msg) {
+      const log = document.getElementById("lira-log");
+      log.value += msg + "\n";
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function saveFile() {
+      const name = document.getElementById('file-name').value.trim();
+      const ext = document.getElementById('file-type').value;
+      const content = document.getElementById('file-content').value;
+
+      if (!name) {
+        alert("Пожалуйста, введите имя файла.");
+        return;
+      }
+
+      const filename = name + ext;
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+
+      URL.revokeObjectURL(link.href);
+      logMessage(✅ Файл "${filename}" сохранён.);
+    }
+  </script>
 </body>
 </html>

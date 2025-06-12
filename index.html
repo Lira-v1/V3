@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Лира v1 — Память</title>
   <link rel="stylesheet" href="style.css">
-  <script src="lira-core.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -46,13 +45,20 @@
     <button onclick="saveFile()">💾 Сохранить файл</button>
   </div>
 
+  <!-- Раздел отображения файлов памяти -->
+  <div id="memory-files" style="display: none; margin-top: 2rem;">
+    <h2>📁 Файлы памяти</h2>
+    <ul id="file-list" style="list-style-type: none; padding-left: 0;"></ul>
+  </div>
+
   <script>
     function verifyToken() {
       const token = document.getElementById('tokenInput').value.trim();
       if (token === "2517") {
         document.getElementById('file-editor').style.display = 'block';
+        document.getElementById('memory-files').style.display = 'block';
+        updateFileList();
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
-        document.getElementById('tokenInput').style.display = 'none';
       } else {
         logMessage("⛔ Неверный токен.");
       }
@@ -83,7 +89,35 @@
       link.click();
 
       URL.revokeObjectURL(link.href);
+
+      // Сохраняем в localStorage
+      const files = JSON.parse(localStorage.getItem('liraFiles') || '[]');
+      files.push({ name: filename, content });
+      localStorage.setItem('liraFiles', JSON.stringify(files));
+      updateFileList();
+
       logMessage(✅ Файл "${filename}" сохранён.);
+    }
+
+    function updateFileList() {
+      const files = JSON.parse(localStorage.getItem('liraFiles') || '[]');
+      const list = document.getElementById('file-list');
+      list.innerHTML = '';
+
+      files.forEach(file => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.textContent = file.name;
+        btn.style.marginBottom = '4px';
+        btn.onclick = () => {
+          document.getElementById('file-name').value = file.name.replace(/\.[^/.]+$/, "");
+          document.getElementById('file-type').value = '.' + file.name.split('.').pop();
+          document.getElementById('file-content').value = file.content;
+          logMessage(📂 Загружен файл "${file.name}");
+        };
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
     }
   </script>
 </body>

@@ -32,17 +32,6 @@
       <option value=".php">.php</option>
       <option value=".yml">.yml</option>
       <option value=".md">.md</option>
-      <option value=".jpg">.jpg</option>
-      <option value=".png">.png</option>
-      <option value=".pdf">.pdf</option>
-      <option value=".webp">.webp</option>
-      <option value=".mp4">.mp4</option>
-      <option value=".gif">.gif</option>
-      <option value=".svg">.svg</option>
-      <option value=".ico">.ico</option>
-      <option value=".ttf">.ttf</option>
-      <option value=".woff">.woff</option>
-      <option value=".woff2">.woff2</option>
     </select>
 
     <label for="file-name">Имя файла:</label>
@@ -55,53 +44,43 @@
   </div>
 
   <script>
+    // Автоматическая активация, если токен сохранён
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedToken = localStorage.getItem('liraToken');
+      if (savedToken === '2517') {
+        authenticate();
+        logMessage("🔁 Автоматический вход выполнен.");
+      }
+
+      // Восстановление данных файла
+      const lastName = localStorage.getItem('lastFileName');
+      const lastType = localStorage.getItem('lastFileType');
+      const lastContent = localStorage.getItem('lastFileContent');
+
+      if (lastName) document.getElementById('file-name').value = lastName;
+      if (lastType) document.getElementById('file-type').value = lastType;
+      if (lastContent) document.getElementById('file-content').value = lastContent;
+    });
+
     function verifyToken() {
       const token = document.getElementById('tokenInput').value.trim();
       if (token === "2517") {
-        document.getElementById('file-editor').style.display = 'block';
+        localStorage.setItem('liraToken', token);
+        authenticate();
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
       } else {
         logMessage("⛔ Неверный токен.");
       }
     }
 
+    function authenticate() {
+      document.getElementById('file-editor').style.display = 'block';
+    }
+
     function logMessage(msg) {
       const log = document.getElementById("lira-log");
       log.value += msg + "\n";
       log.scrollTop = log.scrollHeight;
-    }
-
-    function getMimeType(extension) {
-      const types = {
-        ".html": "text/html",
-        ".htm": "text/html",
-        ".css": "text/css",
-        ".js": "application/javascript",
-        ".ts": "application/typescript",
-        ".json": "application/json",
-        ".xml": "application/xml",
-        ".php": "application/x-httpd-php",
-        ".yml": "text/yaml",
-        ".yaml": "text/yaml",
-        ".md": "text/markdown",
-        ".jpg": "image/jpeg",
-        ".jpeg": "image/jpeg",
-        ".png": "image/png",
-        ".svg": "image/svg+xml",
-        ".webp": "image/webp",
-        ".ico": "image/x-icon",
-        ".mp4": "video/mp4",
-        ".webm": "video/webm",
-        ".gif": "image/gif",
-        ".ttf": "font/ttf",
-        ".otf": "font/otf",
-        ".woff": "font/woff",
-        ".woff2": "font/woff2",
-        ".jsx": "text/jsx",
-        ".scss": "text/x-scss",
-        ".less": "text/x-less"
-      };
-      return types[extension.toLowerCase()] || "application/octet-stream";
     }
 
     function saveFile() {
@@ -115,16 +94,20 @@
       }
 
       const filename = name + ext;
-      const mimeType = getMimeType(ext);
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
 
-      const blob = new Blob([content], { type: mimeType });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
       link.download = filename;
       link.click();
       URL.revokeObjectURL(link.href);
 
-      logMessage(✅ Файл "${filename}" сохранён как ${mimeType});
+      // Сохраняем в "память"
+      localStorage.setItem('lastFileName', name);
+      localStorage.setItem('lastFileType', ext);
+      localStorage.setItem('lastFileContent', content);
+
+      logMessage(✅ Файл "${filename}" сохранён. Память обновлена.);
     }
   </script>
 </body>

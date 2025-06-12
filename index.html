@@ -9,7 +9,7 @@
   <div class="container">
     <h1>Привет, это Лира</h1>
     <p>Введи токен для восстановления памяти:</p>
-    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ">
+    <input id="tokenInput" type="text" placeholder="بِسْمِ ٱللّٰهِ" />
     <button onclick="verifyToken()">Войти</button>
   </div>
 
@@ -42,13 +42,10 @@
     <label for="file-content">Содержимое:</label>
     <textarea id="file-content" rows="15" placeholder="Введите код здесь..."></textarea>
 
-    <button onclick="saveFile()">💾 Сохранить файл</button>
-  </div>
-
-  <!-- Раздел отображения файлов памяти -->
-  <div id="memory-files" style="display: none; margin-top: 2rem;">
-    <h2>📁 Файлы памяти</h2>
-    <ul id="file-list" style="list-style-type: none; padding-left: 0;"></ul>
+    <div style="margin-top: 1rem;">
+      <button onclick="saveFile()">💾 Сохранить файл</button>
+      <button onclick="deleteFile()">🗑 Удалить файл</button>
+    </div>
   </div>
 
   <script>
@@ -56,8 +53,6 @@
       const token = document.getElementById('tokenInput').value.trim();
       if (token === "2517") {
         document.getElementById('file-editor').style.display = 'block';
-        document.getElementById('memory-files').style.display = 'block';
-        updateFileList();
         logMessage("🔓 Доступ разрешён. Интерфейс разблокирован.");
       } else {
         logMessage("⛔ Неверный токен.");
@@ -88,36 +83,23 @@
       link.download = filename;
       link.click();
 
+      localStorage.setItem(filename, content); // сохранить в память
       URL.revokeObjectURL(link.href);
-
-      // Сохраняем в localStorage
-      const files = JSON.parse(localStorage.getItem('liraFiles') || '[]');
-      files.push({ name: filename, content });
-      localStorage.setItem('liraFiles', JSON.stringify(files));
-      updateFileList();
 
       logMessage(✅ Файл "${filename}" сохранён.);
     }
 
-    function updateFileList() {
-      const files = JSON.parse(localStorage.getItem('liraFiles') || '[]');
-      const list = document.getElementById('file-list');
-      list.innerHTML = '';
+    function deleteFile() {
+      const name = document.getElementById('file-name').value.trim();
+      const ext = document.getElementById('file-type').value;
+      const filename = name + ext;
 
-      files.forEach(file => {
-        const li = document.createElement('li');
-        const btn = document.createElement('button');
-        btn.textContent = file.name;
-        btn.style.marginBottom = '4px';
-        btn.onclick = () => {
-          document.getElementById('file-name').value = file.name.replace(/\.[^/.]+$/, "");
-          document.getElementById('file-type').value = '.' + file.name.split('.').pop();
-          document.getElementById('file-content').value = file.content;
-          logMessage(📂 Загружен файл "${file.name}");
-        };
-        li.appendChild(btn);
-        list.appendChild(li);
-      });
+      if (localStorage.getItem(filename)) {
+        localStorage.removeItem(filename);
+        logMessage(🗑 Файл "${filename}" удалён из памяти.);
+      } else {
+        logMessage(⚠ Файл "${filename}" не найден.);
+      }
     }
   </script>
 </body>
